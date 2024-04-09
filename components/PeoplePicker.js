@@ -44,11 +44,11 @@ const PeoplePicker = ({ people }) => {
                 height={200}
                 className={styles.card__headshot}
             />
-            <h3 classname={styles.card__name}>
+            <h3 className={styles.card__name}>
                 {people[activePersonindex].name.first}{" "}
                 {people[activePersonindex].name.last}
             </h3>
-            <h4 classname={styles.card__job}>
+            <h4 className={styles.card__job}>
                 <em>{people[activePersonindex].jobTitle}</em>
                 <br />
                 {people[activePersonindex].company}
