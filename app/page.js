@@ -89,7 +89,7 @@ const Homepage = () => {
   <div>
     {weatherData?.list.filter((block) => {
     const date = new Date(block.dt * 1000);
-    const day = date.toLocaleDateString(en-US, options);
+    const day = date.toLocaleDateString("en-US", options);
     return day === daysOfWeek[activeDayIndex];
   })
     .map((block, index) => {
