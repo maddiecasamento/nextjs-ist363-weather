@@ -7,8 +7,10 @@ const Button = ({ backgroundColor, clickHandler, label }) => {
     onClick={clickHandler}
     style={{
         backgroundColor: backgroundColor,
-    }}> 
+    }}
+    > 
     {label}
-    </button>)
+    </button>
+    );
 };
 export default Button;

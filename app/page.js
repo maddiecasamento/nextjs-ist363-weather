@@ -1,41 +1,48 @@
 "use client";
 
+// core components
 import { useState, useEffect } from "react";
 
-import Image from 'next/image';
+// next js components
+import Image from "next/image";
 
-import ButtonDemo from "../components/ButtonDemo";
-import ColorPicker from "../components/ColorPicker";
-import PeoplePicker from "../components/PeoplePicker";
+// custom components
+import Button from "../components/Button";
+import Col from "../components/Col";
+import Container from "../components/Container";
+import List from "../components/List";
+import Row from "../components/Row";
+import Section from "../components/Section";
 import Tabs from "../components/Tabs";
+import Temp from "../components/Temp";
 
-import { getPeople, getWeatherData, getGeoLocation, getWeatherDataByLatLon } from "../lib/api";
+import { getGeoLocation, getPeople, getWeatherDataByLatLon } from "../lib/api";
 
 const Homepage = () => {
+  const [loading, setLoading] = useState(true);
   const [weatherData, setWeatherData] = useState(null);
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [daysOfWeek, setDaysOfWeek] = useState([null]);
+  const [daysOfWeek, setDaysOfWeek] = useState(null);
   const [activeDayIndex, setActiveDayIndex] = useState(0);
-
-  const peopleArr = getPeople();
+  const [tempUnit, setTempUnit] = useState("imperial");
 
   useEffect(() => {
     getGeoLocation()
-    .then((position) => {
-      console.log(position);
-      setLocation(position);
-    })
-    .catch((error) => {
-      setErrorMsg(error);
-    });
+      .then((position) => {
+        console.log(position);
+        setLocation(position);
+      })
+      .catch((error) => {
+        setErrorMsg(error);
+      });
   }, []);
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = location ? await getWeatherDataByLatLon
-      (location): "";
+      const response = await getWeatherDataByLatLon(location);
       setWeatherData(response);
+      setLoading(false);
     };
     location ? fetchData() : null;
   }, [location]);
@@ -44,63 +51,77 @@ const Homepage = () => {
     // filter out the days of the week
     const tempWeek = [];
 
-    weatherData && weatherData.list.filter((block) => {
-      const date = new Date(block.dt * 1000);
-      const options = { weekday: "short" };
-      const day = date.toLocaleDateString("en-US", options);
-      //console.log(day);
-      if (!tempWeek.includes(day)) {
-        tempWeek.push(day);
-
-      }
-    });
+    weatherData &&
+      weatherData.list.filter((block) => {
+        const date = new Date(block.dt * 1000);
+        const options = { weekday: "short" };
+        const day = date.toLocaleDateString("en-US", options);
+        //console.log(day);
+        if (!tempWeek.includes(day)) {
+          tempWeek.push(day);
+        }
+      });
 
     setDaysOfWeek(tempWeek);
 
     // then set state with the days of the week
   }, [weatherData]);
 
-  //console.log({ peopleArr });
   return (
-  <div>
-    <h1>Weather app</h1>
-    {errorMsg && <div>{eoorMsg}</div>}
-    {weatherData && (
-      <div>
-        <h2>{weatherData.city.name}</h2>
-        <p>Current temp: {weatherData.list[0].main.temp}&deg; F</p>
-        <p>{weatherData.list[0].weather[0].description}</p>
-        <Image 
-          src={`https://openweathermap.org/img/wn/${weatherData.list[0].weather[0].icon}@2x.png`}
-          alt={`Weather icon`}
-          width={100}
-          height={100}
-        />
-      </div>
-    )}
-    {/*<PeoplePicker people={peopleArr} />
-    <ButtonDemo />
-  <ColorPicker/>*/}
-  {daysOfWeek && (
-  <section>
-  <Tabs 
-  activeIndex={activeDayIndex}
-  items={daysOfWeek} 
-  clickHandler={setActiveDayIndex}/>
-  <div>
-    {weatherData?.list.filter((block) => {
-    const date = new Date(block.dt * 1000);
-    const options = {weekday: "short"};
-    const day = date.toLocaleDateString("en-US", options);
-    return day === daysOfWeek[activeDayIndex];
-  })
-    .map((block, index) => {
-      return <p key={index}>{block.main.temp}</p>
-    })}
-  </div>
-  </section>
-  )}
-  </div>
+    <Section>
+      {errorMsg && <div>{errorMsg}</div>}
+      {loading ? (
+        <Container>
+          <p>Loading...</p>
+        </Container>
+      ) : (
+        <Container>
+          <Row>
+            <Col sm={3} md={4}>
+              <h2>{weatherData.city.name}</h2>
+              <Temp
+                size="lg"
+                amount={weatherData.list[0].main.temp}
+                unit={tempUnit}
+              />
+              <p>{weatherData.list[0].weather[0].description}</p>
+              <Image
+                src={`https://openweathermap.org/img/wn/${weatherData.list[0].weather[0].icon}@2x.png`}
+                alt={`Weather icon for ${weatherData.list[0].weather[0].description}`}
+                width={100}
+                height={100}
+              />
+              <br />
+              <Button
+                label={`Change to ${
+                  tempUnit === "imperial" ? "celsius" : "fahrenheit"
+                }`}
+                clickHandler={() => {
+                  setTempUnit(tempUnit === "imperial" ? "metric" : "imperial");
+                }}
+              />
+            </Col>
+            <Col sm={9} md={8}>
+              {weatherData && daysOfWeek && (
+                <section>
+                  <Tabs
+                    activeIndex={activeDayIndex}
+                    items={daysOfWeek}
+                    clickHandler={setActiveDayIndex}
+                  />
+                  <List
+                    activeIndex={activeDayIndex}
+                    items={weatherData.list}
+                    daysOfWeek={daysOfWeek}
+                    unit={tempUnit}
+                  />
+                </section>
+              )}
+            </Col>
+          </Row>
+        </Container>
+      )}
+    </Section>
   );
 };
 export default Homepage;
