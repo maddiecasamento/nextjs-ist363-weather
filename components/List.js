@@ -18,6 +18,9 @@ const List = ({ activeIndex, daysOfWeek, items, unit }) => {
           const options = {
             hour: "numeric",
             minute: "numeric",
+            weekday: "long", 
+            year: "numeric",
+            day: "numeric",
           };
           const time = date.toLocaleString("en-US", options);
           return (
